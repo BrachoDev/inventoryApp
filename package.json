@@ -1,0 +1,29 @@
+{
+  "name": "inventoryapp",
+  "version": "1.0.0",
+  "description": "This is an improved version of the app I made for CS-360, which was an android inventoryApp",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon backend/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrachoDev/inventoryApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/BrachoDev/inventoryApp/issues"
+  },
+  "homepage": "https://github.com/BrachoDev/inventoryApp#readme",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
