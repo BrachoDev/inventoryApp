@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+// Controller functions for user management
+// Register a new user
 export const registerUser = async (req, res) => {
   const user = req.body; // user will send this data
 
@@ -96,6 +98,7 @@ export const registerUser = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(user.password, salt);
 
+  // Create a new user instance
   const newUser = new User({
     username: user.username,
     email: user.email,
@@ -103,6 +106,7 @@ export const registerUser = async (req, res) => {
     phone: user.phone || null, // Set to null if phone is not provided
   });
 
+  // Save the new user to the database
   try {
     await newUser.save();
     res.status(201).json({
@@ -112,6 +116,63 @@ export const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error registering user:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get all users
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password"); // Exclude password field
+    res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      data: users,
+    });
+  } catch (error) {
+    console.error("Error retrieving users:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Delete a user by ID
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ success: false, message: "Invalid User ID" });
+  }
+
+  try {
+    await User.findByIdAndDelete(id);
+    res
+      .status(200)
+      .json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Update a user by ID
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const user = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ success: false, message: "Invalid User ID" });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(id, user, {
+      new: true,
+    });
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error.message);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

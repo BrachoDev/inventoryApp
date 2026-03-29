@@ -1,27 +1,31 @@
-import { Timestamp } from "bson";
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
+    // Name of the product
     name: {
       type: String,
-      required: true,
+      required: true, // Name is required
     },
+    // Price of the product
     price: {
       type: Number,
-      required: true,
+      required: true, // Price is required
     },
+    // URL or path to the product image
     image: {
       type: String,
-      required: true,
+      required: true, // Image is required
     },
+    // Physical location of the product in the warehouse
     binLocation: {
       type: String,
-      required: true,
+      required: true, // Bin location is required
     },
+    // Quantity of the product in stock
     quantity: {
       type: Number,
-      required: true,
+      required: true, // Quantity is required
     },
   },
   {
@@ -29,6 +33,7 @@ const productSchema = new mongoose.Schema(
   },
 );
 
+// Create the Product model using the productSchema
 const Product = mongoose.model("Product", productSchema);
 
 export default Product;

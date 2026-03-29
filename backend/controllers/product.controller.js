@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
 
+// Get all products
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find({});
@@ -11,6 +12,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
+// Create a new product
 export const createProduct = async (req, res) => {
   const product = req.body; // user will send this data
 
@@ -41,6 +43,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
+// Delete a product by ID
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
 
@@ -59,6 +62,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
+// Update a product by ID
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
 
