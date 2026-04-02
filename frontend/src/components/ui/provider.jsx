@@ -1,9 +1,5 @@
-import { ChakraProvider, defaultSystem } from "@chakra-ui/react"
+import { ChakraProvider } from "@chakra-ui/react";
 
 export function Provider({ children }) {
-  return (
-    <ChakraProvider value={defaultSystem}>
-      {children}
-    </ChakraProvider>
-  )
+  return <ChakraProvider>{children}</ChakraProvider>;
 }
