@@ -6,6 +6,8 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true, // Name is required
+      unique: true, // Name must be unique
+      trim: true, // Remove whitespace from both ends of the string
     },
     // Price of the product
     price: {
@@ -21,6 +23,8 @@ const productSchema = new mongoose.Schema(
     binLocation: {
       type: String,
       required: true, // Bin location is required
+      unique: true, // Bin location must be unique
+      trim: true, // Remove whitespace from both ends of the string
     },
     // Quantity of the product in stock
     quantity: {
