@@ -12,18 +12,53 @@ import {
   Modal,
   useDisclosure,
   ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  VStack,
+  Input,
+  FormControl,
+  FormLabel,
+  ModalFooter,
+  Button,
 } from "@chakra-ui/react";
 import { Trash2, SquarePen } from "lucide-react";
+import { useState } from "react";
 
 const ProductCard = ({ product }) => {
+  const [updatedProduct, setUpdatedProduct] = useState(product);
   const textColor = useColorModeValue("gray.600", "gray.200");
   const bg = useColorModeValue("white", "gray.800");
 
-  const { deleteProduct } = useProductStore();
+  const { deleteProduct, updateProduct } = useProductStore();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const handleDeleteProduct = async (pid) => {
     const { success, message } = await deleteProduct(pid);
+    if (!success) {
+      toast({
+        title: "Error",
+        description: message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    } else {
+      toast({
+        title: "Success",
+        description: message,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleUpdateProduct = async (pid, updatedProduct) => {
+    const { success, message } = await updateProduct(pid, updatedProduct);
+    onClose();
     if (!success) {
       toast({
         title: "Error",
@@ -74,7 +109,11 @@ const ProductCard = ({ product }) => {
         </HStack>
 
         <HStack spacing={2}>
-          <IconButton icon={<SquarePen />} colorScheme="blue" />
+          <IconButton
+            icon={<SquarePen />}
+            colorScheme="blue"
+            onClick={onOpen}
+          />
           <IconButton
             icon={<Trash2 />}
             onClick={() => handleDeleteProduct(product._id)}
@@ -83,10 +122,96 @@ const ProductCard = ({ product }) => {
         </HStack>
       </Box>
 
-      {/* The code below is for the update modal */}
-      {/* <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay></ModalOverlay>
-      </Modal> */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Update Product</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormControl>
+                <FormLabel>Name:</FormLabel>
+                <Input
+                  name="name"
+                  value={updatedProduct.name}
+                  onChange={(e) =>
+                    setUpdatedProduct({
+                      ...updatedProduct,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Price:</FormLabel>
+                <Input
+                  name="price"
+                  type="number"
+                  value={updatedProduct.price}
+                  onChange={(e) =>
+                    setUpdatedProduct({
+                      ...updatedProduct,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Image URL:</FormLabel>
+                <Input
+                  name="image"
+                  value={updatedProduct.image}
+                  onChange={(e) =>
+                    setUpdatedProduct({
+                      ...updatedProduct,
+                      image: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Quantity:</FormLabel>
+                <Input
+                  name="quantity"
+                  type="number"
+                  value={updatedProduct.quantity}
+                  onChange={(e) =>
+                    setUpdatedProduct({
+                      ...updatedProduct,
+                      quantity: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Bin Location:</FormLabel>
+                <Input
+                  name="binLocation"
+                  value={updatedProduct.binLocation}
+                  onChange={(e) =>
+                    setUpdatedProduct({
+                      ...updatedProduct,
+                      binLocation: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={() => handleUpdateProduct(product._id, updatedProduct)}
+            >
+              Update
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };
