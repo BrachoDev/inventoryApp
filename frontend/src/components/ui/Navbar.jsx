@@ -7,7 +7,7 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { SquarePlus, Sun, Moon } from "lucide-react";
+import { SquarePlus, Sun, Moon, House } from "lucide-react";
 
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -31,6 +31,11 @@ const Navbar = () => {
         </Text>
 
         <HStack spacing={2} alignItems={"center"}>
+          <Link to="/">
+            <Button>
+              <House size={20} />
+            </Button>
+          </Link>
           <Link to="/create">
             <Button>
               <SquarePlus size={20} />
