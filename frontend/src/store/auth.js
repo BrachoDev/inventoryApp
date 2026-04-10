@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
   user: null,
+  token: localStorage.getItem("token") || null,
 
   setUser: (user) => set({ user }),
 
@@ -10,7 +11,7 @@ export const useAuthStore = create((set) => ({
       return { success: false, message: "Please fill in all fields" };
     }
 
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch("/api/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,8 +25,12 @@ export const useAuthStore = create((set) => ({
       return { success: false, message: data.message };
     }
 
-    // store user + token
-    set({ user: data.user });
+    // STORE BOTH user + token
+    set({
+      user: data.user,
+      token: data.token,
+    });
+
     localStorage.setItem("token", data.token);
 
     return { success: true, message: "Login successful" };
@@ -33,7 +38,7 @@ export const useAuthStore = create((set) => ({
 
   logout: () => {
     localStorage.removeItem("token");
-    set({ user: null });
+    set({ user: null, token: null }); // also clear token
   },
 
   checkAuth: async () => {
@@ -42,7 +47,7 @@ export const useAuthStore = create((set) => ({
     if (!token) return;
 
     try {
-      const res = await fetch("/api/auth/me", {
+      const res = await fetch("/api/users/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,12 +56,30 @@ export const useAuthStore = create((set) => ({
       const data = await res.json();
 
       if (data.success) {
-        set({ user: data.user });
+        set({ user: data.user, token }); // keep token in state
       } else {
         localStorage.removeItem("token");
+        set({ user: null, token: null });
       }
     } catch (error) {
       console.log("Auth check failed");
     }
+  },
+
+  createUser: async (userData) => {
+    if (!userData.username || !userData.email || !userData.password) {
+      return { success: false, message: "Please fill in all fields" };
+    }
+
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await res.json();
+    return data;
   },
 }));

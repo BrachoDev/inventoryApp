@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 // Controller functions for user management
 // Register a new user
@@ -174,5 +175,100 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     console.error("Error updating user:", error.message);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Login user
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate fields
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required",
+    });
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findOne({
+      $or: [{ email }, { username: email }],
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Generate token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error("Error logging in user:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// Get current logged-in user
+export const getCurrentUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token provided",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      user,
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "Invalid token",
+    });
   }
 };

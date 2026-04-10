@@ -12,15 +12,30 @@ import {
   FormLabel,
   Text,
   Link,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const toast = useToast();
+  const navigate = useNavigate();
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
-  const { login } = useAuthStore();
+  const { login, createUser } = useAuthStore();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleLogin = async () => {
     const { success, message } = await login({ email, password });
@@ -45,7 +60,34 @@ const LoginPage = () => {
       setEmail("");
       setPassword("");
 
-      // later: redirect to homepage
+      // redirect to homepage
+      navigate("/");
+    }
+  };
+
+  const handleRegister = async () => {
+    const { success, message } = await createUser(newUser);
+
+    if (!success) {
+      toast({
+        title: "Error",
+        description: message,
+        status: "error",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+        status: "success",
+      });
+
+      setNewUser({
+        username: "",
+        email: "",
+        password: "",
+      });
+
+      onClose();
     }
   };
 
@@ -68,15 +110,15 @@ const LoginPage = () => {
             color="gray.500"
           >
             Need an account?{" "}
-            <Link to={"/create"}>
-              <Text
-                as="span"
-                color="blue.500"
-                _hover={{ textDecoration: "underline" }}
-              >
-                Create a new account
-              </Text>
-            </Link>
+            <Text
+              as="span"
+              color="blue.500"
+              cursor="pointer"
+              onClick={onOpen}
+              _hover={{ textDecoration: "underline" }}
+            >
+              Create a new account
+            </Text>
           </Text>
 
           <FormControl>
@@ -103,6 +145,52 @@ const LoginPage = () => {
           </Button>
         </VStack>
       </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Create Account</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <VStack spacing={4}>
+              <FormControl>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  value={newUser.username}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, username: e.target.value })
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  value={newUser.email}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
+                />
+              </FormControl>
+
+              <Button colorScheme="green" w="full" onClick={handleRegister}>
+                Create Account
+              </Button>
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 };
