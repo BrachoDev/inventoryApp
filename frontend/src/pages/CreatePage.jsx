@@ -8,6 +8,8 @@ import {
   useColorModeValue,
   VStack,
   useToast,
+  Text,
+  Link,
 } from "@chakra-ui/react";
 import { useState } from "react";
 
@@ -84,6 +86,12 @@ const CreatePage = () => {
               setNewProduct({ ...newProduct, image: e.target.value })
             }
           />
+          <Text fontSize="s" color={useColorModeValue("gray.600", "gray.500")} textAlign="left" w="full">
+            Need an image URL? Find one{" "}
+            <Link href="https://unsplash.com" color={useColorModeValue("blue.500", "blue.300")} isExternal>
+              here
+            </Link>
+          </Text>
           <Input
             placeholder="Bin Location"
             name="binLocation"

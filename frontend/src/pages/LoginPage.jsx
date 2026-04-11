@@ -31,7 +31,9 @@ const LoginPage = () => {
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
+    phone: "",
     password: "",
+    confirmPassword: "",
   });
 
   const { login, createUser } = useAuthStore();
@@ -66,6 +68,26 @@ const LoginPage = () => {
   };
 
   const handleRegister = async () => {
+    // ✅ check required fields
+    if (!newUser.username || !newUser.email || !newUser.password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        status: "error",
+      });
+      return;
+    }
+
+    // ✅ check password match
+    if (newUser.password !== newUser.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        status: "error",
+      });
+      return;
+    }
+
     const { success, message } = await createUser(newUser);
 
     if (!success) {
@@ -84,7 +106,9 @@ const LoginPage = () => {
       setNewUser({
         username: "",
         email: "",
+        phone: "",
         password: "",
+        confirmPassword: "",
       });
 
       onClose();
@@ -156,6 +180,7 @@ const LoginPage = () => {
               <FormControl>
                 <FormLabel>Username</FormLabel>
                 <Input
+                  name="username"
                   value={newUser.username}
                   onChange={(e) =>
                     setNewUser({ ...newUser, username: e.target.value })
@@ -166,6 +191,7 @@ const LoginPage = () => {
               <FormControl>
                 <FormLabel>Email</FormLabel>
                 <Input
+                  name="email"
                   value={newUser.email}
                   onChange={(e) =>
                     setNewUser({ ...newUser, email: e.target.value })
@@ -174,8 +200,20 @@ const LoginPage = () => {
               </FormControl>
 
               <FormControl>
+                <FormLabel>Phone Number (Optional)</FormLabel>
+                <Input
+                  name="phone"
+                  value={newUser.phone}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, phone: e.target.value })
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
                 <FormLabel>Password</FormLabel>
                 <Input
+                  name="password"
                   type="password"
                   value={newUser.password}
                   onChange={(e) =>
@@ -184,7 +222,23 @@ const LoginPage = () => {
                 />
               </FormControl>
 
-              <Button colorScheme="green" w="full" onClick={handleRegister}>
+              <FormControl>
+                <FormLabel>Confirm Password</FormLabel>
+                <Input
+                  name="confirmPassword"
+                  type="password"
+                  value={newUser.confirmPassword}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, confirmPassword: e.target.value })
+                  }
+                />
+              </FormControl>
+
+              <Button
+                colorScheme="green"
+                w="full"
+                onClick={handleRegister}
+              >
                 Create Account
               </Button>
             </VStack>

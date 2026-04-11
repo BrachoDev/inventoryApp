@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
 
 const ProtectedRoute = ({ children }) => {
-  const token = useAuthStore((state) => state.token);
+  const { token } = useAuthStore();
 
   // ❌ Not logged in → go to login
   if (!token) {
