@@ -54,7 +54,7 @@ const CreatePage = () => {
   };
 
   return (
-    <Container maxW={"container.sm"}>
+    <Container maxW={"container.sm"} py={12}>
       <VStack spacing={8}>
         <Heading as={"h1"} size={"2xl"} textAlign={"center"} mb={8}>
           {" "}
