@@ -1,43 +1,58 @@
+// product.model.js
+// Defines the schema and structure for Product documents
+// stored in MongoDB. Enforces validation rules such as
+// required fields and uniqueness constraints.
+
 import mongoose from "mongoose";
 
+// Schema representing an inventory product
 const productSchema = new mongoose.Schema(
   {
-    // Name of the product
+    // Unique product name used for identification
     name: {
       type: String,
-      required: true, // Name is required
-      unique: true, // Name must be unique
-      trim: true, // Remove whitespace from both ends of the string
+      required: true,
+      unique: true, // Prevent duplicate product names
+      trim: true, // Clean up extra whitespace
     },
-    // Price of the product
+
+    // Monetary value of the product
     price: {
       type: Number,
-      required: true, // Price is required
+      required: true,
     },
-    // URL or path to the product image
+
+    // Image URL used for displaying the product in the UI
     image: {
       type: String,
-      required: true, // Image is required
+      required: true,
     },
-    // Physical location of the product in the warehouse
+
+    // Storage location (e.g., warehouse bin)
+    // Must be unique so no two products share the same space
     binLocation: {
       type: String,
-      required: true, // Bin location is required
-      unique: true, // Bin location must be unique
-      trim: true, // Remove whitespace from both ends of the string
+      required: true,
+      unique: true,
+      trim: true,
     },
-    // Quantity of the product in stock
+
+    // Number of items available in stock
     quantity: {
       type: Number,
-      required: true, // Quantity is required
+      required: true,
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
-  },
+    // Automatically adds:
+    // createdAt → when the product was created
+    // updatedAt → last time the product was modified
+    timestamps: true,
+  }
 );
 
-// Create the Product model using the productSchema
+// Create and export the Product model
+// This model is used to interact with the "products" collection in MongoDB
 const Product = mongoose.model("Product", productSchema);
 
 export default Product;

@@ -1,14 +1,29 @@
-// Import dependencies
+// server.js
+// Entry point of the backend application.
+// Sets up Express server, connects to MongoDB,
+// registers API routes, and serves frontend in production.
+
+// ====================
+// IMPORT DEPENDENCIES
+// ====================
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 
-// Import database connection function
+// ====================
+// IMPORT CUSTOM MODULES
+// ====================
+
+// Database connection function
 import { connectDB } from "./config/db.js";
 
-// Import route handlers
+// Route handlers
 import productRoutes from "./routes/product.route.js";
 import userRoutes from "./routes/user.route.js";
+
+// ====================
+// CONFIGURATION
+// ====================
 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,36 +35,54 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Set the port from environment variable or default to 5000
+// Use environment port or default to 5000
 const PORT = process.env.PORT || 5000;
 
-// Get the current directory path using path.resolve() for compatibility with ES modules
-const __dirname = path.resolve(); // Get the current directory path
+// Resolve current directory (needed for serving frontend in ES modules)
+const __dirname = path.resolve();
 
-app.use(express.json()); //allows us to parse JSON bodies in requests
+// ====================
+// MIDDLEWARE
+// ====================
 
-// Use the imported route handlers for products and users
+// Parse incoming JSON requests (req.body)
+app.use(express.json());
+
+// ====================
+// API ROUTES
+// ====================
+
+// Route all product-related requests to productRoutes
+// Base URL: /api/products
 app.use("/api/products", productRoutes);
+
+// Route all user/auth-related requests to userRoutes
+// Base URL: /api/users
 app.use("/api/users", userRoutes);
 
-// Serve static files from the frontend in production
+// ====================
+// PRODUCTION SETUP
+// ====================
+
+// Serve frontend (React build) when in production mode
 if (process.env.NODE_ENV === "production") {
-  // Serve static files from the React frontend build directory
+  // Serve static files from frontend build folder
   app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-  // For any route that doesn't match the API routes, serve the React frontend's index.html
+  // Catch-all route: send back index.html for client-side routing
   app.get("/{*splat}", (req, res) => {
     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
   });
 }
 
-// NOTE: Uncomment this route to test if the server is running correctly
-// app.get("/", (req, res) => {
-//   res.send("API is running...");
-// });
+// ====================
+// SERVER STARTUP
+// ====================
 
-// Start the server and connect to the database
+// Start server and connect to database
 app.listen(PORT, () => {
+  // Establish MongoDB connection when server starts
   connectDB();
-  console.log("Server is running on port http://localhost:" + PORT);
+
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -1,3 +1,8 @@
+// App.jsx
+// Main application component.
+// Handles routing, authentication check, layout structure,
+// and renders protected/public pages.
+
 import { Box, useColorModeValue, Flex, Text, Link } from "@chakra-ui/react";
 import { Route, Routes } from "react-router-dom";
 import CreatePage from "./pages/CreatePage";
@@ -10,25 +15,31 @@ import { useAuthStore } from "@/store/auth";
 import { FaGithub } from "react-icons/fa";
 
 function App() {
+  // Access authentication check function from Zustand store
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
+  // Run authentication check when the app first loads
+  // This ensures the user stays logged in across refreshes
   useEffect(() => {
     checkAuth();
   }, []);
 
   return (
     <Box
-      minH={"100vh"}
+      minH={"100vh"} // Full viewport height
       display={"flex"}
-      flexDirection={"column"}
-      bg={useColorModeValue("gray.100", "gray.900")}
+      flexDirection={"column"} // Enables footer to stay at bottom
+      bg={useColorModeValue("gray.100", "gray.900")} // Light/Dark mode background
     >
+      {/* Navigation bar displayed on all pages */}
       <Navbar />
+
+      {/* ==================== ROUTES ==================== */}
       <Routes>
-        {/* Public Route */}
+        {/* Public Route: accessible without authentication */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Routes */}
+        {/* Protected Route: only accessible if user is authenticated */}
         <Route
           path="/"
           element={
@@ -38,6 +49,7 @@ function App() {
           }
         />
 
+        {/* Protected Route: create product page */}
         <Route
           path="/create"
           element={
@@ -47,9 +59,11 @@ function App() {
           }
         />
       </Routes>
+
+      {/* ==================== FOOTER ==================== */}
       <Flex
         as="footer"
-        mt="auto"
+        mt="auto" // Push footer to bottom
         py={4}
         justifyContent="center"
         alignItems="center"
@@ -60,7 +74,7 @@ function App() {
           Created by{" "}
           <Link
             href="https://github.com/BrachoDev"
-            isExternal
+            isExternal // Opens link in new tab
             color="blue.400"
             fontWeight="bold"
             display="inline-flex"

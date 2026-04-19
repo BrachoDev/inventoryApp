@@ -1,3 +1,8 @@
+// HomePage.jsx
+// Main dashboard page for viewing inventory products.
+// Retrieves products from the store, supports search and sorting,
+// and displays product cards in a responsive grid layout.
+
 import {
   Container,
   Text,
@@ -15,20 +20,26 @@ import ProductCard from "../components/ui/ProductCard";
 import { useProductStore } from "../store/product";
 
 const HomePage = () => {
+  // Access product state and actions from Zustand store
   const { fetchProducts, products } = useProductStore();
+
+  // Fetch all products when the page loads
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
+  // Theme-aware styles for inputs and buttons
   const inputBg = useColorModeValue("gray.100", "gray.700");
   const inputColor = useColorModeValue("black", "white");
   const borderColor = useColorModeValue("gray.500", "gray.600");
   const buttonBg = useColorModeValue("gray.300", "gray.600");
   const buttonHover = useColorModeValue("gray.400", "gray.500");
 
+  // Local state for search term and selected sort option
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
 
+  // Filter products by name or bin location, then sort them
   const filteredProducts = products
     .filter(
       (product) =>
@@ -50,13 +61,14 @@ const HomePage = () => {
         case "binLocation-desc":
           return b.binLocation.localeCompare(a.binLocation);
         default:
-          return 0;
+          return 0; // Keep original order if no sort option is selected
       }
     });
 
   return (
     <Container maxW="container.xl" py={12}>
       <VStack spacing={8}>
+        {/* Page title */}
         <Text
           fontSize={"30"}
           fontWeight={"bold"}
@@ -66,7 +78,10 @@ const HomePage = () => {
         >
           Current Products 🏷️
         </Text>
+
+        {/* Search and sort controls */}
         <HStack w="full" spacing={4} alignSelf={"left"}>
+          {/* Search input */}
           <Input
             width={"lg"}
             placeholder="Search by name or bin location..."
@@ -77,6 +92,8 @@ const HomePage = () => {
             borderColor={borderColor}
             _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           />
+
+          {/* Clear search button */}
           <Button
             onClick={() => setSearch("")}
             bg={buttonBg}
@@ -85,6 +102,7 @@ const HomePage = () => {
             Clear
           </Button>
 
+          {/* Sort dropdown */}
           <Select
             placeholder="Sort"
             value={sortOption}
@@ -102,6 +120,8 @@ const HomePage = () => {
             <option value="binLocation-desc">Bin Location (High → Low)</option>
           </Select>
         </HStack>
+
+        {/* Product grid */}
         <SimpleGrid
           columns={{
             base: 1,
@@ -116,6 +136,7 @@ const HomePage = () => {
           ))}
         </SimpleGrid>
 
+        {/* Empty state shown when no products match the filter */}
         {filteredProducts.length === 0 && (
           <Text
             fontSize="xl"
@@ -139,4 +160,5 @@ const HomePage = () => {
     </Container>
   );
 };
+
 export default HomePage;

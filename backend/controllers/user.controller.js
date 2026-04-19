@@ -1,21 +1,28 @@
+// user.controller.js
+// Handles all user-related backend operations such as
+// registration, login, retrieval, update, and deletion.
+
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// Controller functions for user management
-// Register a new user
+// ====================
+// REGISTER USER
+// ====================
+// Creates a new user account after validating input,
+// checking for duplicates, and hashing the password.
 export const registerUser = async (req, res) => {
-  const user = req.body; // user will send this data
+  const user = req.body; // Data sent from the client
 
-  // Check if all fields are present
+  // Validate required fields
   if (!user.username || !user.email || !user.password) {
     return res
       .status(400)
       .json({ success: false, message: "All fields are required" });
   }
 
-  // Email format validation
+  // Validate email format to ensure a proper email address is provided
   const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
   if (!emailRegex.test(user.email)) {
     return res.status(400).json({
@@ -24,10 +31,10 @@ export const registerUser = async (req, res) => {
     });
   }
 
-  // Phone number validation (if provided)
+  // Validate phone number only if the user provided one
   if (user.phone) {
-    // Phone number regex for international format (optional)
-    // This regex accepts: +1234567890, 1234567890, (123) 456-7890, etc.
+    // Accepts multiple phone number styles such as:
+    // +1234567890, 1234567890, (123) 456-7890, etc.
     const phoneRegex =
       /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,6}[-\s\.]?[0-9]{1,6}$/;
 
@@ -38,11 +45,11 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Remove non-digit characters for consistent storage
+    // Store phone number in a normalized format by removing symbols/spaces
     user.phone = user.phone.replace(/\D/g, "");
   }
 
-  // Check if password length is at least 8 characters
+  // Require a minimum password length for better security
   if (user.password.length < 8) {
     return res.status(400).json({
       success: false,
@@ -50,7 +57,7 @@ export const registerUser = async (req, res) => {
     });
   }
 
-  // username min length validation
+  // Require a minimum username length
   if (user.username.length < 6) {
     return res.status(400).json({
       success: false,
@@ -58,7 +65,7 @@ export const registerUser = async (req, res) => {
     });
   }
 
-  //Username allowed characters validation
+  // Restrict username characters to keep usernames clean and predictable
   const usernameRegex = /^[a-zA-Z0-9_]+$/;
   if (!usernameRegex.test(user.username)) {
     return res.status(400).json({
@@ -67,7 +74,8 @@ export const registerUser = async (req, res) => {
     });
   }
 
-  // Password strength validation
+  // Enforce stronger passwords by requiring:
+  // at least one uppercase letter, one lowercase letter, and one number
   const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
   if (!passwordStrengthRegex.test(user.password)) {
     return res.status(400).json({
@@ -77,17 +85,19 @@ export const registerUser = async (req, res) => {
     });
   }
 
-  // check if user already exists
+  // Check whether the username or email is already being used
   const existingUser = await User.findOne({
     $or: [{ username: user.username }, { email: user.email }],
   });
+
   if (existingUser) {
-    // Determine which field caused the conflict
+    // Return a specific message depending on which field is duplicated
     if (existingUser.email === user.email) {
       return res
         .status(400)
         .json({ success: false, message: "Email already in use" });
     }
+
     if (existingUser.username === user.username) {
       return res
         .status(400)
@@ -95,21 +105,22 @@ export const registerUser = async (req, res) => {
     }
   }
 
-  // hash the password before saving
+  // Hash password before saving so plain-text passwords are never stored
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(user.password, salt);
 
-  // Create a new user instance
+  // Build the new user document
   const newUser = new User({
     username: user.username,
     email: user.email,
     password: hashedPassword,
-    phone: user.phone || null, // Set to null if phone is not provided
+    phone: user.phone || null, // Store null when phone is not provided
   });
 
-  // Save the new user to the database
   try {
+    // Save the user to the database
     await newUser.save();
+
     res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -121,10 +132,15 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// Get all users
+// ====================
+// GET ALL USERS
+// ====================
+// Retrieves all users from the database while excluding passwords
+// so sensitive information is not exposed in the response.
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // Exclude password field
+    const users = await User.find().select("-password");
+
     res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
@@ -136,15 +152,22 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// Delete a user by ID
+// ====================
+// DELETE USER
+// ====================
+// Deletes a user by ID after validating that the ID
+// is a valid MongoDB ObjectId.
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
+
+  // Prevent invalid IDs from being used in database queries
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ success: false, message: "Invalid User ID" });
   }
 
   try {
     await User.findByIdAndDelete(id);
+
     res
       .status(200)
       .json({ success: true, message: "User deleted successfully" });
@@ -154,19 +177,24 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// Update a user by ID
+// ====================
+// UPDATE USER
+// ====================
+// Updates user information based on the provided ID.
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const user = req.body;
 
+  // Validate MongoDB ObjectId before attempting update
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ success: false, message: "Invalid User ID" });
   }
 
   try {
     const updatedUser = await User.findByIdAndUpdate(id, user, {
-      new: true,
+      new: true, // Return the updated document instead of the original
     });
+
     res.status(200).json({
       success: true,
       message: "User updated successfully",
@@ -178,11 +206,15 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// Login user
+// ====================
+// LOGIN USER
+// ====================
+// Authenticates a user by verifying credentials and
+// returning a signed JWT token for future protected requests.
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate fields
+  // Validate required login fields
   if (!email || !password) {
     return res.status(400).json({
       success: false,
@@ -191,11 +223,12 @@ export const loginUser = async (req, res) => {
   }
 
   try {
-    // Check if user exists
+    // Allow login using either email or username in the same field
     const user = await User.findOne({
       $or: [{ email }, { username: email }],
     });
 
+    // Return a generic error message to avoid exposing which field failed
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -203,7 +236,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // Compare password
+    // Compare entered password with hashed password stored in database
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -213,7 +246,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate JWT token used for authenticating protected routes
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
@@ -237,9 +270,14 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Get current logged-in user
+// ====================
+// GET CURRENT USER
+// ====================
+// Verifies the JWT token sent in the request header and
+// returns the currently logged-in user's information.
 export const getCurrentUser = async (req, res) => {
   try {
+    // Extract token from Authorization header: "Bearer <token>"
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
@@ -249,8 +287,10 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
+    // Decode and verify the token using the server's secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Retrieve user data without returning the password field
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
@@ -266,6 +306,7 @@ export const getCurrentUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    // Token is missing, expired, or invalid
     res.status(401).json({
       success: false,
       message: "Invalid token",

@@ -1,3 +1,7 @@
+// CreatePage.jsx
+// Page responsible for creating new inventory products.
+// Handles form input, local state, and sending data to the backend.
+
 import { useProductStore } from "@/store/product";
 import {
   Box,
@@ -14,6 +18,7 @@ import {
 import { useState } from "react";
 
 const CreatePage = () => {
+  // Local state to store form input values
   const [newProduct, setNewProduct] = useState({
     name: "",
     image: "",
@@ -22,12 +27,18 @@ const CreatePage = () => {
     quantity: "",
   });
 
+  // Toast for user feedback (success/error messages)
   const toast = useToast();
+
+  // Access createProduct function from Zustand store
   const { createProduct } = useProductStore();
 
+  // Handles product creation by sending data to backend
   const handleAddProduct = async () => {
     const { success, message } = await createProduct(newProduct);
+
     if (!success) {
+      // Show error message if request fails
       toast({
         title: "Error",
         description: message,
@@ -36,6 +47,7 @@ const CreatePage = () => {
         isClosable: true,
       });
     } else {
+      // Show success message and reset form fields
       toast({
         title: "Success",
         description: message,
@@ -43,6 +55,7 @@ const CreatePage = () => {
         duration: 5000,
         isClosable: true,
       });
+
       setNewProduct({
         name: "",
         image: "",
@@ -56,12 +69,13 @@ const CreatePage = () => {
   return (
     <Container maxW={"container.sm"} py={12}>
       <VStack spacing={8}>
+        {/* Page title */}
         <Heading as={"h1"} size={"2xl"} textAlign={"center"} mb={8}>
-          {" "}
-          Create New Product{" "}
+          Create New Product
         </Heading>
       </VStack>
 
+      {/* Form container */}
       <Box
         w={"full"}
         bg={useColorModeValue("white", "gray.800")}
@@ -70,6 +84,7 @@ const CreatePage = () => {
         shadow={"md"}
       >
         <VStack spacing={4}>
+          {/* Product name input */}
           <Input
             placeholder="Product Name"
             name="name"
@@ -78,6 +93,8 @@ const CreatePage = () => {
               setNewProduct({ ...newProduct, name: e.target.value })
             }
           />
+
+          {/* Image URL input */}
           <Input
             placeholder="Image URL"
             name="image"
@@ -86,12 +103,25 @@ const CreatePage = () => {
               setNewProduct({ ...newProduct, image: e.target.value })
             }
           />
-          <Text fontSize="s" color={useColorModeValue("gray.600", "gray.500")} textAlign="left" w="full">
+
+          {/* Helper text for finding images */}
+          <Text
+            fontSize="s"
+            color={useColorModeValue("gray.600", "gray.500")}
+            textAlign="left"
+            w="full"
+          >
             Need an image URL? Find one{" "}
-            <Link href="https://unsplash.com" color={useColorModeValue("blue.500", "blue.300")} isExternal>
+            <Link
+              href="https://unsplash.com"
+              color={useColorModeValue("blue.500", "blue.300")}
+              isExternal
+            >
               here
             </Link>
           </Text>
+
+          {/* Bin location input */}
           <Input
             placeholder="Bin Location"
             name="binLocation"
@@ -100,6 +130,8 @@ const CreatePage = () => {
               setNewProduct({ ...newProduct, binLocation: e.target.value })
             }
           />
+
+          {/* Price input (converted to number) */}
           <Input
             placeholder="Price"
             name="price"
@@ -112,6 +144,8 @@ const CreatePage = () => {
               })
             }
           />
+
+          {/* Quantity input (converted to integer) */}
           <Input
             placeholder="Quantity"
             name="quantity"
@@ -124,6 +158,8 @@ const CreatePage = () => {
               })
             }
           />
+
+          {/* Submit button */}
           <Button colorScheme="green" onClick={handleAddProduct} w="full">
             Create Product
           </Button>
@@ -132,4 +168,5 @@ const CreatePage = () => {
     </Container>
   );
 };
+
 export default CreatePage;

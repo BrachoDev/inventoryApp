@@ -1,3 +1,8 @@
+// LoginPage.jsx
+// Handles user authentication and account creation.
+// Provides a login form for existing users and a modal
+// for registering new accounts.
+
 import { useAuthStore } from "@/store/auth";
 import {
   Box,
@@ -11,7 +16,6 @@ import {
   FormControl,
   FormLabel,
   Text,
-  Link,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -24,10 +28,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  // Local state for login form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Toast for user feedback
   const toast = useToast();
+
+  // Navigation hook for redirecting after successful login
   const navigate = useNavigate();
+
+  // Local state for registration form inside modal
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
@@ -36,9 +47,13 @@ const LoginPage = () => {
     confirmPassword: "",
   });
 
+  // Auth actions from Zustand store
   const { login, createUser } = useAuthStore();
+
+  // Controls account creation modal state
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Handles login request and redirects user to home page on success
   const handleLogin = async () => {
     const { success, message } = await login({ email, password });
 
@@ -59,16 +74,18 @@ const LoginPage = () => {
         isClosable: true,
       });
 
+      // Clear form inputs after successful login
       setEmail("");
       setPassword("");
 
-      // redirect to homepage
+      // Redirect authenticated user to the home page
       navigate("/");
     }
   };
 
+  // Handles new account creation from the modal form
   const handleRegister = async () => {
-    // ✅ check required fields
+    // Validate required fields before sending request
     if (!newUser.username || !newUser.email || !newUser.password) {
       toast({
         title: "Error",
@@ -78,7 +95,7 @@ const LoginPage = () => {
       return;
     }
 
-    // ✅ check password match
+    // Ensure password confirmation matches
     if (newUser.password !== newUser.confirmPassword) {
       toast({
         title: "Error",
@@ -103,6 +120,7 @@ const LoginPage = () => {
         status: "success",
       });
 
+      // Reset registration form after successful account creation
       setNewUser({
         username: "",
         email: "",
@@ -111,12 +129,14 @@ const LoginPage = () => {
         confirmPassword: "",
       });
 
+      // Close modal after registration completes
       onClose();
     }
   };
 
   return (
     <Container maxW={"container.sm"}>
+      {/* Login form container */}
       <Box
         w={"full"}
         bg={useColorModeValue("white", "gray.800")}
@@ -127,6 +147,8 @@ const LoginPage = () => {
       >
         <VStack spacing={6}>
           <Heading size="xl">Log in</Heading>
+
+          {/* Link-like text for opening account creation modal */}
           <Text
             fontSize="sm"
             textAlign={"center"}
@@ -145,6 +167,7 @@ const LoginPage = () => {
             </Text>
           </Text>
 
+          {/* Login identifier input (username or email) */}
           <FormControl>
             <FormLabel>Username or Email</FormLabel>
             <Input
@@ -154,6 +177,7 @@ const LoginPage = () => {
             />
           </FormControl>
 
+          {/* Login password input */}
           <FormControl>
             <FormLabel>Password</FormLabel>
             <Input
@@ -164,19 +188,23 @@ const LoginPage = () => {
             />
           </FormControl>
 
+          {/* Login submit button */}
           <Button colorScheme="blue" w="full" size="lg" onClick={handleLogin}>
             Log In
           </Button>
         </VStack>
       </Box>
 
+      {/* Registration modal */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create Account</ModalHeader>
           <ModalCloseButton />
+
           <ModalBody pb={6}>
             <VStack spacing={4}>
+              {/* Username input */}
               <FormControl>
                 <FormLabel>Username</FormLabel>
                 <Input
@@ -188,6 +216,7 @@ const LoginPage = () => {
                 />
               </FormControl>
 
+              {/* Email input */}
               <FormControl>
                 <FormLabel>Email</FormLabel>
                 <Input
@@ -199,6 +228,7 @@ const LoginPage = () => {
                 />
               </FormControl>
 
+              {/* Optional phone number input */}
               <FormControl>
                 <FormLabel>Phone Number (Optional)</FormLabel>
                 <Input
@@ -210,6 +240,7 @@ const LoginPage = () => {
                 />
               </FormControl>
 
+              {/* Password input */}
               <FormControl>
                 <FormLabel>Password</FormLabel>
                 <Input
@@ -222,6 +253,7 @@ const LoginPage = () => {
                 />
               </FormControl>
 
+              {/* Confirm password input */}
               <FormControl>
                 <FormLabel>Confirm Password</FormLabel>
                 <Input
@@ -234,6 +266,7 @@ const LoginPage = () => {
                 />
               </FormControl>
 
+              {/* Registration submit button */}
               <Button
                 colorScheme="green"
                 w="full"
